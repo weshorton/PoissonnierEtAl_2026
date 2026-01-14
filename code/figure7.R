@@ -74,7 +74,7 @@ fig7A_gg <- ggplot(data = fig7A_dt, aes(x = Title, y = Clonality)) +
 fig7_lsdt[["7a"]] <- fig7A_dt
 fig7Titles_lsv[["7a"]] <- gsub("\\\n", ";", fig7ATitle_v)
 
-pdf(file = file.path(plotDir_v, "7a.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7a.pdf"), height = 8, width = 8)
 fig7A_gg
 dev.off()
 
@@ -113,7 +113,7 @@ fig7B_gg <- ggplot(data = fig7B_dt, aes(x = Title, y = `Shannon Entropy`)) +
 fig7_lsdt[["7b"]] <- fig7B_dt
 fig7Titles_lsv[["7b"]] <- gsub("\\\n", ";", fig7BTitle_v)
 
-pdf(file = file.path(plotDir_v, "7b.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7b.pdf"), height = 8, width = 8)
 fig7B_gg
 dev.off()
 
@@ -154,7 +154,7 @@ fig7C_gg <- ggplot(data = tmpFig7C_dt, aes(x = Title, y = mean, fill = variable)
 fig7_lsdt[["7c"]] <- fig7C_dt
 fig7Titles_lsv[["7c"]] <- gsub("\\\n", ";", fig7CTitle_v)
 
-pdf(file = file.path(plotDir_v, "7c.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7c.pdf"), height = 8, width = 8)
 fig7C_gg
 dev.off()
 
@@ -195,7 +195,7 @@ fig7D_gg <- ggplot(data = tmpFig7D_dt, aes(x = Title, y = mean, fill = variable)
 fig7_lsdt[["7d"]] <- fig7D_dt
 fig7Titles_lsv[["7d"]] <- gsub("\\\n", ";", fig7DTitle_v)
 
-pdf(file = file.path(plotDir_v, "7d.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7d.pdf"), height = 8, width = 8)
 fig7D_gg
 dev.off()
 
@@ -206,6 +206,10 @@ dev.off()
 ### Subset
 fig7E_dt <- jaccard_lsdt$TumorTop100
 
+### Labels
+fig7E_counts <- as.data.table(table(fig7E_dt$treatmentComparison))
+fig7E_dt <- merge(fig7E_dt, fig7E_counts, by.x = "treatmentComparison", by.y = "V1", sort = F)
+
 ### Title
 fig7ETitle_v <- "Fig 7e - Jaccard Index Between Top 100 Clones of Primary Tumor Samples"
 
@@ -213,6 +217,7 @@ fig7ETitle_v <- "Fig 7e - Jaccard Index Between Top 100 Clones of Primary Tumor 
 fig7E_gg <- ggplot(fig7E_dt, aes(x = treatmentComparison, y = Jaccard)) +
   geom_violin(aes(color = treatmentComparison)) +
   geom_jitter(shape = 15, size = 0.5, position = position_jitter(width = 0.05, height = 0)) +
+  geom_text(aes(y = 0, label = N), size = 3, vjust = 2) +
   theme_classic() +
   theme(plot.title = element_text(hjust = 0.5, size = 18), 
         plot.subtitle = element_text(hjust = 0.5, size = 14), 
@@ -226,7 +231,7 @@ fig7E_gg <- ggplot(fig7E_dt, aes(x = treatmentComparison, y = Jaccard)) +
 fig7_lsdt[["7e"]] <- fig7E_dt
 fig7Titles_lsv[["7e"]] <- gsub("\\\n", ";", fig7ETitle_v)
 
-pdf(file = file.path(plotDir_v, "7e.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7e.pdf"), height = 8, width = 8)
 fig7E_gg
 dev.off()
 
@@ -256,7 +261,7 @@ fig7Falt_gg <- fig7Falt_gg + scale_fill_manual(values = plotInfo_lsv$trackCloneC
 fig7_lsdt[["7f"]] <- fig7F_dt
 fig7Titles_lsv[["7f"]] <- fig7FTitle_v
 
-pdf(file = file.path(plotDir_v, "7f.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7f.pdf"), height = 6, width = 10)
 fig7F_gg
 fig7Falt_gg
 dev.off()
@@ -287,7 +292,7 @@ fig7Galt_gg <- fig7Galt_gg + scale_fill_manual(values = plotInfo_lsv$trackCloneC
 fig7_lsdt[["7g"]] <- fig7G_dt
 fig7Titles_lsv[["7g"]] <- fig7GTitle_v
 
-pdf(file = file.path(plotDir_v, "7g.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7g.pdf"), height = 6, width = 12)
 fig7G_gg
 fig7Galt_gg
 dev.off()
@@ -372,7 +377,7 @@ dev.off()
 fig7J_dt <- trackClonotypes(.data = trackCloneCorpus_lsdt$LungTop50, .which = trackCloneQuery_lsdt$Tumor3xaPDL1, .col = "aa")
 
 ### Title
-fig7JTitle_v <- "Fig 7h - Top 50 3x aPD-L1 clones in primary tumors in top 50 of other 3x treatments in lung mets"
+fig7JTitle_v <- "Fig 7j - Top 50 3x aPD-L1 clones in primary tumors in top 50 of other 3x treatments in lung mets"
 
 ### Plot
 fig7J_gg <- suppressWarnings(vis(trackClonotypes(.data = trackCloneCorpus_lsdt$LungTop50, 
@@ -384,7 +389,7 @@ fig7J_gg <- fig7J_gg + scale_fill_manual(values = plotInfo_lsv$trackCloneColors,
 fig7_lsdt[["7j"]] <- fig7J_dt
 fig7Titles_lsv[["7j"]] <- fig7JTitle_v
 
-pdf(file = file.path(plotDir_v, "7j.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "7j.pdf"), height = 6, width = 12)
 fig7J_gg
 dev.off()
 
@@ -424,7 +429,7 @@ figS7A_gg <- ggplot(figS7A_dt, aes(x = treatmentComparison, y = Jaccard)) +
 suppFig7_lsdt[["S7a"]] <- figS7A_dt
 suppFig7Titles_lsv[["S7a"]] <- gsub("\\\n", ";", figS7ATitle_v)
 
-pdf(file = file.path(plotDir_v, "S7a.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7a.pdf"), height = 8, width = 8)
 figS7A_gg
 dev.off()
 
@@ -462,7 +467,7 @@ figS7B_gg <- ggplot(data = figS7B_dt, aes(x = Title, y = `Shannon Entropy`)) +
 suppFig7_lsdt[["S7b"]] <- figS7B_dt
 suppFig7Titles_lsv[["7b"]] <- gsub("\\\n", ";", figS7BTitle_v)
 
-pdf(file = file.path(plotDir_v, "S7b.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7b.pdf"), height = 8, width = 8)
 figS7B_gg
 dev.off()
 
@@ -500,7 +505,7 @@ figS7C_gg <- ggplot(data = figS7C_dt, aes(x = Title, y = Clonality)) +
 suppFig7_lsdt[["S7b"]] <- figS7C_dt
 suppFig7Titles_lsv[["S7b"]] <- figS7CTitle_v
 
-pdf(file = file.path(plotDir_v, "S7c.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7c.pdf"), height = 8, width = 8)
 figS7C_gg
 dev.off()
 
@@ -541,7 +546,7 @@ figS7D_gg <- ggplot(data = tmpFigS7D_dt, aes(x = Title, y = mean, fill = variabl
 suppFig7_lsdt[["S7d"]] <- figS7D_dt
 suppFig7Titles_lsv[["S7d"]] <- gsub("\\\n", ";", figS7DTitle_v)
 
-pdf(file = file.path(plotDir_v, "S7d.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7d.pdf"), height = 8, width = 8)
 figS7D_gg
 dev.off()
 
@@ -582,7 +587,7 @@ figS7E_gg <- ggplot(data = tmpFigS7E_dt, aes(x = Title, y = mean, fill = variabl
 suppFig7_lsdt[["S7e"]] <- figS7E_dt
 suppFig7Titles_lsv[["S7e"]] <- gsub("\\\n", ";", figS7ETitle_v)
 
-pdf(file = file.path(plotDir_v, "S7e.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7e.pdf"), height = 8, width = 8)
 figS7E_gg
 dev.off()
 
@@ -618,7 +623,7 @@ figS7F_gg <- ggplot(figS7F_dt, aes(x = treatmentComparison, y = Jaccard)) +
 suppFig7_lsdt[["S7f"]] <- figS7F_dt
 suppFig7Titles_lsv[["S7f"]] <- gsub("\\\n", ";", figS7FTitle_v)
 
-pdf(file = file.path(plotDir_v, "S7f.pdf"), height = 6, width = 8)
+pdf(file = file.path(plotDir_v, "S7f.pdf"), height = 8, width = 8)
 figS7F_gg
 dev.off()
 
