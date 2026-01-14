@@ -137,7 +137,7 @@ toPlot_lslsv <- list("fig2D" = list("Question" = "Q3",
                                      "Pops" = c("ClassicalMonocytes_CD14ppCD16n_PDL1", 
                                                 "Non_classicalMonocyte_CD14pCD16pp_PDL1",
                                                 "IntermediateMonocyte_CD14pCD16p_PDL1"),
-                                     "Size" = c(6, 8), "LabSize" = c(10, 8)),
+                                     "Size" = c(6, 12), "LabSize" = c(8, 12)),
                      
                      
                      "figS2O" = list("Question" = "Q5",
@@ -146,7 +146,7 @@ toPlot_lslsv <- list("fig2D" = list("Question" = "Q3",
                                      "Time" = "C1C2",
                                      "Effect" = "Time",
                                      "Pops" =  c("PlasmacytoidDCs_PDL1", "CD141p_mDCs_PDL1", "CD1cp_mDCs_PDL1"),
-                                     "Size" = c(6, 8), "LabSize" = c(10, 8)),
+                                     "Size" = c(6, 12), "LabSize" = c(8, 12)),
                      
                      
                      "figS2R" = list("Question" = "Q4", 
@@ -162,6 +162,7 @@ toPlot_lslsv <- list("fig2D" = list("Question" = "Q3",
 ### Plots ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###
 
+counts_lsdt <- list()
 for (i in 1:length(toPlot_lslsv)) {
   
   ### Get info
@@ -242,6 +243,7 @@ for (i in 1:length(toPlot_lslsv)) {
   
   ### Get counts
   counts_dt <- as.data.table(table(currMelt_dt[,mget(unique(c(fillCol_v, xVar_v)))]))
+  counts_lsdt[[currFigName_v]] <- counts_dt
   
   ### Add them
   currMelt_dt <- merge(currMelt_dt, counts_dt, by = unique(c(fillCol_v, xVar_v)), sort = F)
@@ -297,7 +299,7 @@ for (i in 1:length(toPlot_lslsv)) {
     curr_gg <- curr_gg + facet_wrap("~facet", nrow = 1, scales = "free")
   }
   
-  if (currFigName_v == "figS2R") {
+  if (currFigName_v %in% c("figS2N", "figS2O", "figS2R")) {
     curr_gg <- curr_gg + facet_wrap("~variable", nrow = 1, scales = "free")
   }
   
@@ -322,3 +324,11 @@ for (i in 1:length(toPlot_lslsv)) {
          plot = curr_gg, height = currLabSize_v[1], width = currLabSize_v[2])
   
 } # for i
+
+### Write
+fig2box_wb <- openxlsx::createWorkbook()
+invisible(lapply(seq_along(counts_lsdt), function(x) {
+  openxlsx::addWorksheet(wb = fig2box_wb, sheetName = names(counts_lsdt)[x])
+  openxlsx::writeData(wb = fig2box_wb, sheet = x, x = counts_lsdt[[x]])
+}))
+openxlsx::saveWorkbook(wb = fig2box_wb, file = "./fig2/boxplotSampleCounts.xlsx", overwrite = T)
