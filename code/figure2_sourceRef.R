@@ -3,6 +3,7 @@
 ####################################################################
 
 ### Miscellaneous colors, column groups, functions, etc. used in the plotting/wrangling code for Figure 2
+library(ggplot2)
 
 ###
 ### Metadata columns ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,6 +39,16 @@ timeColors_v <- c("Screen" = "#33B44A", "C1D1" = "#EF3324", "C2D1" = "#006164", 
 ### Colors for response group designations (boxplot)
 grpColors_v <- RColorBrewer::brewer.pal(8, "Dark2")[c(2,4)]
 names(grpColors_v) <- c("PD", "SD_PR")
+
+survTheme <- function() {
+  theme_classic() + 
+    theme(plot.title = element_text(hjust = 0.5, size = 18), 
+          plot.subtitle = element_text(hjust = 0.5, size = 14), 
+          axis.text = element_text(size = 12), 
+          axis.title = element_text(size = 14), 
+          legend.text = element_text(size = 12), 
+          legend.title = element_text(size = 14))
+}
 
 ###
 ### Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
