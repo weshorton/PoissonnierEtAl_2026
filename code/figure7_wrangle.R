@@ -8,6 +8,7 @@ source("./code/figure7_sourceRef.R")
 library(data.table)
 library(ggplot2)
 library(immunarch)
+dir.create("./data/fig7/rds")
 
 ###
 ### Read in ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
