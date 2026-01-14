@@ -19,8 +19,19 @@ library(gridExtra)
 ### Read in data
 data_dt <- as.data.table(readxl::read_xlsx("./data/fig2/data.xlsx", sheet = "all"))
 
+### Read in survival
+sheets_v <- readxl::excel_sheets("./data/fig2/survivalGroups.xlsx")
+survGrp_lsdt <- lapply(sheets_v, function(x) {
+  setDT(readxl::read_excel(path = "./data/fig2/survivalGroups.xlsx", sheet = x))
+})
+names(survGrp_lsdt) <- sheets_v
+survMed_dt <- setDT(readxl::read_excel(path = "./data/fig2/survivalMedians.xlsx", sheet = "Sheet1"))
+
 ### Create metadata
-meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
+metaCols_v <- c("PatientID", "CB", "BR", "progression (1 or 0)", "PFS_time", "TOT", "Dstart",
+                "EOT Date", "Date_progression", "OFF Study", "EOT Reason")
+meta_dt <- unique(data_dt[,mget(metaCols_v)])
+#meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
 
 ### Remove non-evaluable patients
 toRm_v <- meta_dt[BR == "NE", PatientID]
@@ -116,12 +127,6 @@ for (i in 1:nrow(figurePops_dt)) {
     ggtitle("PFS Time Scatter")
     #ggtitle(paste0("PFS Time vs. ", currPop_v, "\n", currMeasure_v, " Expression (", nrow(currData_dt), " Pts)"))
   
-  #print(curr_gg)
-    
-  # pdf(file = file.path("./tmpSurv/", paste0(currMeasure_v, "_", currPop_v, ".pdf")))
-  # print(curr_gg)
-  # dev.off()
-  
   ### Cox Regression
   currSurv <- survival::Surv(time = currData_dt$PFS_time, event = currData_dt$`progression (1 or 0)`)
   
@@ -144,9 +149,81 @@ for (i in 1:nrow(figurePops_dt)) {
   currCombo_gg <- ggpubr::ggarrange(curr_gg, currCox_gg, currMartin_gg, nrow = 1)
   currCombo_gg <- ggpubr::annotate_figure(currCombo_gg, top = text_grob(label = paste0("PFS Time vs. ", currPop_v, "\n", currMeasure_v), size = 24))
   
-  pdf(file = file.path("./fig2/surv/", paste0(currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
+  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_", currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
   print(currCombo_gg)
   dev.off()
   
+} # for i
 
+###
+### KM Plot ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###
+
+timeCol_v <- "PFS_time"
+eventCol_v <- "progression (1 or 0)"
+
+### Specify columns
+metaCols_v <- colnames(survGrp_lsdt[[1]])[1:(grep("CD8", colnames(survGrp_lsdt[[1]]))[1]-1)]
+measureCols_v <- setdiff(colnames(survGrp_lsdt[[1]]), metaCols_v)
+
+for (i in 1:nrow(figurePops_dt)) {
+  
+  ### Get info
+  currPop_v <- figurePops_dt$pop[i]
+  currMeasure_v <- figurePops_dt$measure[i]
+  currFigName_v <- figurePops_dt$fig[i]
+  currGrp_dt <- survGrp_lsdt[[currMeasure_v]]
+  
+  ### Subset Data
+  currData_dt <- melt_lsdt[[currMeasure_v]][variable == currPop_v,]
+  
+  ### Subset NAs
+  currData_dt <- currData_dt[!is.na(value),]
+  
+  ### Get Median
+  currMed_v <- survMed_dt[Column == currPop_v, get(currMeasure_v)]
+  
+  ### Make Group
+  currGrp_v <- paste0(currPop_v, "_grp")
+  
+  ### Merge
+  currMerge_dt <- merge(currData_dt, currGrp_dt[,mget(c("PatientID", "Cycle", "CB", currGrp_v))],
+                       by = c("PatientID", "Cycle", "CB"))
+  
+  ### Factorize
+  currMerge_dt[[currGrp_v]] <- factor(currMerge_dt[[currGrp_v]], levels = c("lo", "hi"))
+  
+  ## Make survival object
+  currSurv <- survival::Surv(time = currMerge_dt[[timeCol_v]], event = currMerge_dt[[eventCol_v]])
+  
+  ## Make formulas
+  currFormula <- as.formula(paste0("currSurv ~ ", currGrp_v))
+  
+  ## Fit model
+  currFit <- survminer::surv_fit(currFormula, data = currMerge_dt)
+  
+  ## Run log-rank
+  currLR <- survival::survdiff(currFormula, data = currMerge_dt)
+  currP_v <- currLR$pvalue
+  
+  ## Make plot
+  curr_gg <- suppressWarnings(survminer::ggsurvplot(fit = currFit,
+                                                    data = currMerge_dt,
+                                                    pval = T,
+                                                    title = paste0(currMeasure_v, " - ", currPop_v, 
+                                                                   "\nMedian: ", round(currMed_v, digits = 3)),
+                                                    surv.median.line = "hv",
+                                                    ggtheme = survTheme(),
+                                                    risk.table = T,
+                                                    xlab = timeCol_v,
+                                                    legend.title = currPop_v,
+                                                    legend.labs = c("below Med", "above Med"),
+                                                    legend = c(0.8,0.8),
+                                                    palette = c("blue", "red")))
+  
+  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_KM_", currMeasure_v, "_", currPop_v, ".pdf")), 
+      width = 7, height = 7, onefile = F)
+  print(curr_gg)
+  dev.off()
+  
 } # for i
