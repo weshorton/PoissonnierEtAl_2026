@@ -16,7 +16,6 @@ And all Rscripts will be executed in order.
 - FSA 0.10.0
 - ggplot2 4.0.1
 - ggpubr 0.6.2
-- grid 4.4.0
 - gridExtra 2.3
 - immunarch 0.9.1
 - openxlsx 4.2.5.2
@@ -26,5 +25,4 @@ And all Rscripts will be executed in order.
 - survival 3.5-8
 - survminer 0.5.0
 - tictoc 1.2.1
-- tools 4.4.0
 - writexl 1.5.4
