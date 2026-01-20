@@ -46,11 +46,6 @@ flow_dt <- fread("./data/fig2/flowDataTypes.txt")
 luminex_dt <- fread("./data/fig2/luminexDataTypes.txt")
 ref_dt <- rbind(flow_dt, luminex_dt)
 
-# ### Info for converting names to time
-# time_lsv <- list("LIC1" = c("Screen", "C1D1"),
-#                  "LIC2" = c("Screen", "C2D1"),
-#                  "C1C2" = c("C1D1", "C2D1"))
-
 ### Change values to pct for those that require it
 pct_dt <- ref_dt[Measure == "pct",]
 for (i in 1:pct_dt[,.N]) {
@@ -59,9 +54,17 @@ for (i in 1:pct_dt[,.N]) {
 }
 
 ### Plot populations
-figurePops_dt <- data.table("pop" = c("CD4_TemTh1_PD1", "MyeloidDCs", "Monocytes_PDL1", "ClassicalMonocytes_CD14ppCD16n_PDL1"),
-                            "measure" = c("Screen", "S.C2D1", "C1D1.C2D1", "C1D1.C2D1"),
-                            "fig" = c("FigS2S", "FigS2T", "FigS2U", "FigS2V"))
+kmPops_dt <- data.table("pop" = c("MyeloidDCs", "ClassicalMonocytes_CD14ppCD16n_PDL1"),
+                        "measure" = c("S.C2D1", "C1D1.C2D1"),
+                        "fig" = c("FigS2S", "FigS2U"))
+
+scatterPops_dt <- data.table("pop" = c("MyeloidDCs", "ClassicalMonocytes_CD14ppCD16n_PDL1"),
+                             "measure" = c("S.C2D1", "C1D1.C2D1"),
+                             "fig" = c("FigS2T", "FigS2V"),
+                             "xLab" = c("log2 Ratio of Percentage", 
+                                       "log2 Ratio of PD-L1 Expression"),
+                             "title" = c("Corr b/w L1-C2D1 Myeloid Freq and PFS",
+                                         "Corr b/w C1D1-C2D1 Classical Monocyte PD-L1 and PFS"))
 
 ###
 ### Wrangle ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,12 +99,14 @@ melt_lsdt <- lapply(data_lsdt, function(x) {
 ### Scatterplot ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###
 
-for (i in 1:nrow(figurePops_dt)) {
+for (i in 1:nrow(scatterPops_dt)) {
   
   ### Get info
-  currPop_v <- figurePops_dt$pop[i]
-  currMeasure_v <- figurePops_dt$measure[i]
-  currFigName_v <- figurePops_dt$fig[i]
+  currPop_v <- scatterPops_dt$pop[i]
+  currMeasure_v <- scatterPops_dt$measure[i]
+  currFigName_v <- scatterPops_dt$fig[i]
+  currXlab_v <- scatterPops_dt$xLab
+  currTitle_v <- scatterPops_dt$title
   
   ### Subset Data
   currData_dt <- melt_lsdt[[currMeasure_v]][variable == currPop_v,]
@@ -109,23 +114,19 @@ for (i in 1:nrow(figurePops_dt)) {
   ### Subset NAs
   currData_dt <- currData_dt[!is.na(value),]
   
-  ### Column for shapes
-  currData_dt[`progression (1 or 0)` == 0, Prog := "0"]
-  currData_dt[`progression (1 or 0)` == 1, Prog := "1"]
-  
   ### Make plot
-  curr_gg <- ggplot(data = currData_dt, aes(x = value, y = PFS_time, shape = Prog, color = Prog)) +
+  curr_gg <- ggplot(data = currData_dt, aes(x = value, y = PFS_time)) +
     geom_point(size = 4) +
-    scale_color_manual(values = c("grey", "black"), breaks = c("0", "1")) +
     theme_classic() + theme(plot.title = element_text(hjust = 0.5, size = 20), 
                             plot.subtitle = element_text(hjust = 0.5, size = 14), 
                             axis.text = element_text(size = 16), 
                             axis.title = element_text(size = 18), 
                             legend.text = element_text(size = 16), 
                             legend.title = element_text(size = 18)) +
-    labs(x = "Expression", y = "PFS time (days)", shape = "Prog") +
-    ggtitle("PFS Time Scatter")
-    #ggtitle(paste0("PFS Time vs. ", currPop_v, "\n", currMeasure_v, " Expression (", nrow(currData_dt), " Pts)"))
+    labs(x = currXlab_v, y = "PFS time (days)") +
+    geom_smooth(method = 'lm', se = F) +
+    stat_cor(method = "pearson") +
+    ggtitle(currTitle_v)
   
   ### Cox Regression
   currSurv <- survival::Surv(time = currData_dt$PFS_time, event = currData_dt$`progression (1 or 0)`)
@@ -135,11 +136,10 @@ for (i in 1:nrow(figurePops_dt)) {
   
   ### Extract p value
   currP_v <- summary(currFit)$coefficients[5]
-  print(summary(currFit))
   
   ### Fit test
   currTest <- survival::cox.zph(currFit)
-  currCox_gg <- survminer::ggcoxzph(currTest)$`1`
+  currCox_gg <- suppressWarnings(survminer::ggcoxzph(currTest)$`1`)
   currCox_gg@labels$title <- paste0(currCox_gg@labels$title, "\nbeta p: ", round(currP_v, digits = 5))
   
   ### Fit test 2
@@ -149,8 +149,12 @@ for (i in 1:nrow(figurePops_dt)) {
   currCombo_gg <- ggpubr::ggarrange(curr_gg, currCox_gg, currMartin_gg, nrow = 1)
   currCombo_gg <- ggpubr::annotate_figure(currCombo_gg, top = text_grob(label = paste0("PFS Time vs. ", currPop_v, "\n", currMeasure_v), size = 24))
   
-  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_", currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
+  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_scatterChecks_", currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
   print(currCombo_gg)
+  dev.off()
+  
+  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_scatter_", currMeasure_v, "_", currPop_v, ".pdf")))
+  print(curr_gg)
   dev.off()
   
 } # for i
@@ -166,12 +170,12 @@ eventCol_v <- "progression (1 or 0)"
 metaCols_v <- colnames(survGrp_lsdt[[1]])[1:(grep("CD8", colnames(survGrp_lsdt[[1]]))[1]-1)]
 measureCols_v <- setdiff(colnames(survGrp_lsdt[[1]]), metaCols_v)
 
-for (i in 1:nrow(figurePops_dt)) {
+for (i in 1:nrow(kmPops_dt)) {
   
   ### Get info
-  currPop_v <- figurePops_dt$pop[i]
-  currMeasure_v <- figurePops_dt$measure[i]
-  currFigName_v <- figurePops_dt$fig[i]
+  currPop_v <- kmPops_dt$pop[i]
+  currMeasure_v <- kmPops_dt$measure[i]
+  currFigName_v <- kmPops_dt$fig[i]
   currGrp_dt <- survGrp_lsdt[[currMeasure_v]]
   
   ### Subset Data
@@ -207,23 +211,24 @@ for (i in 1:nrow(figurePops_dt)) {
   currP_v <- currLR$pvalue
   
   ## Make plot
-  curr_gg <- suppressWarnings(survminer::ggsurvplot(fit = currFit,
-                                                    data = currMerge_dt,
-                                                    pval = T,
-                                                    title = paste0(currMeasure_v, " - ", currPop_v, 
-                                                                   "\nMedian: ", round(currMed_v, digits = 3)),
-                                                    surv.median.line = "hv",
-                                                    ggtheme = survTheme(),
-                                                    risk.table = T,
-                                                    xlab = timeCol_v,
-                                                    legend.title = currPop_v,
-                                                    legend.labs = c("below Med", "above Med"),
-                                                    legend = c(0.8,0.8),
-                                                    palette = c("blue", "red")))
+  curr_gg <- suppressMessages(suppressWarnings(
+    survminer::ggsurvplot(fit = currFit,
+                          data = currMerge_dt,
+                          pval = T,
+                          title = paste0(currMeasure_v, " - ", currPop_v, 
+                                         "\nMedian: ", round(currMed_v, digits = 3)),
+                          surv.median.line = "hv",
+                          ggtheme = survTheme(),
+                          risk.table = T,
+                          xlab = timeCol_v,
+                          legend.title = currPop_v,
+                          legend.labs = c("below Med", "above Med"),
+                          legend = c(0.8,0.8),
+                          palette = c("blue", "red"))))
   
   pdf(file = file.path("./fig2/", paste0(currFigName_v, "_KM_", currMeasure_v, "_", currPop_v, ".pdf")), 
       width = 7, height = 7, onefile = F)
-  print(curr_gg)
+  suppressMessages(suppressWarnings(print(curr_gg)))
   dev.off()
   
 } # for i
