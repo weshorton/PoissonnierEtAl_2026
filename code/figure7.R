@@ -46,11 +46,13 @@ suppFig7Titles_lsv <- list()
 
 ### Subset
 fig7A_dt <- diversityMetrics_lsdt$Tumor[Experiment != "d95", mget(c("geoSample", "Treatment", "Title", "Clonality"))]
+lvls_v <- levels(fig7A_dt$Title)
 
 ### Labels
 fig7A_dt[, yPos := min(Clonality)]
-fig7A_counts <- as.data.table(table(fig7A_dt$Treatment))
-fig7A_dt <- merge(fig7A_dt, fig7A_counts, by.x = "Treatment", by.y = "V1", sort = F)
+fig7A_counts <- as.data.table(table(fig7A_dt$Title))
+fig7A_dt <- merge(fig7A_dt, fig7A_counts, by.x = "Title", by.y = "V1", sort = F)
+fig7A_dt$Title <- factor(fig7A_dt$Title, levels = lvls_v)
 
 ### Title
 fig7ATitle_v <- "Fig 7a - Treatwise Clonal Index of end-stage (d105) tumors\nas well as d80 WT and Untreated"
@@ -85,11 +87,13 @@ dev.off()
 
 ### Subset
 fig7B_dt <- diversityMetrics_lsdt$Tumor[Experiment != "d95", mget(c("geoSample", "Treatment", "Title", "Shannon Entropy"))]
+lvls_v <- levels(fig7B_dt$Title)
 
 ### Labels
 fig7B_dt[, yPos := min(`Shannon Entropy`)]
-fig7B_counts <- as.data.table(table(fig7B_dt$Treatment))
-fig7B_dt <- merge(fig7B_dt, fig7B_counts, by.x = "Treatment", by.y = "V1", sort = F)
+fig7B_counts <- as.data.table(table(fig7B_dt$Title))
+fig7B_dt <- merge(fig7B_dt, fig7B_counts, by.x = "Title", by.y = "V1", sort = F)
+fig7B_dt$Title <- factor(fig7B_dt$Title, levels = lvls_v)
 
 ### Title
 fig7BTitle_v <- "Fig 7b - Treatwise Shannon Entropy of end-stage (d105) tumors\nas well as d80 WT and Untreated"
@@ -124,6 +128,7 @@ dev.off()
 ### Subset
 fig7C_dt <- topClones_lsdt$Tumor[Experiment != "d95",]
 fig7C_dt$Sample <- NULL; fig7C_dt$Experiment <- NULL
+lvls_v <- levels(fig7C_dt$Title)
 
 ### Title
 fig7CTitle_v <- "Fig 7c - Binned Clonal Frequencies of Primary Tumors"
@@ -135,7 +140,8 @@ tmpFig7C_dt[, mean := mean(value, na.rm = T), by = c("Title", "variable")]
 tmpFig7C_dt <- unique(tmpFig7C_dt[,mget(c("Title", "Treatment", "mean", "variable"))])
 
 ### Labels
-tmpFig7C_dt <- merge(tmpFig7C_dt, unique(fig7B_dt[,mget(c("Treatment", "N"))]), by = "Treatment", sort = F)
+tmpFig7C_dt <- merge(tmpFig7C_dt, unique(fig7B_dt[,mget(c("Title", "N"))]), by = "Title", sort = F)
+tmpFig7C_dt$Title <- factor(tmpFig7C_dt$Title, levels = lvls_v)
 
 ### Plot
 fig7C_gg <- ggplot(data = tmpFig7C_dt, aes(x = Title, y = mean, fill = variable)) +
@@ -165,6 +171,7 @@ dev.off()
 ### Subset
 fig7D_dt <- freqGroups_lsdt$Tumor[Experiment != "d95",]
 fig7D_dt$Sample <- NULL; fig7D_dt$Experiment <- NULL
+lvls_v <- levels(fig7D_dt$Title)
 
 ### Title
 fig7DTitle_v <- "Fig 7d - Binned Clonal Frequencies of Primary Tumors"
@@ -176,7 +183,8 @@ tmpFig7D_dt[, mean := mean(value, na.rm = T), by = c("Title", "variable")]
 tmpFig7D_dt <- unique(tmpFig7D_dt[,mget(c("Title", "Treatment", "mean", "variable"))])
 
 ### Labels
-tmpFig7D_dt <- merge(tmpFig7D_dt, unique(fig7B_dt[,mget(c("Treatment", "N"))]), by = "Treatment", sort = F)
+tmpFig7D_dt <- merge(tmpFig7D_dt, unique(fig7B_dt[,mget(c("Title", "N"))]), by = "Title", sort = F)
+tmpFig7D_dt$Title <- factor(tmpFig7D_dt$Title, levels = lvls_v)
 
 ### Plot
 fig7D_gg <- ggplot(data = tmpFig7D_dt, aes(x = Title, y = mean, fill = variable)) +
@@ -439,11 +447,13 @@ dev.off()
 
 ### Subset
 figS7B_dt <- diversityMetrics_lsdt$Lung[Experiment != "d95", mget(c("geoSample", "Treatment", "Title", "Shannon Entropy"))]
+lvls_v <- levels(figS7B_dt$Title)
 
 ### Labels
 figS7B_dt[, yPos := min(`Shannon Entropy`)]
-figS7B_counts <- as.data.table(table(figS7B_dt$Treatment))
-figS7B_dt <- merge(figS7B_dt, figS7B_counts, by.x = "Treatment", by.y = "V1", sort = F)
+figS7B_counts <- as.data.table(table(figS7B_dt$Title))
+figS7B_dt <- merge(figS7B_dt, figS7B_counts, by.x = "Title", by.y = "V1", sort = F)
+figS7B_dt$Title <- factor(figS7B_dt$Title, levels = lvls_v)
 
 ### Title
 figS7BTitle_v <- "Fig S7b - Treatwise Shannon Entropy of end-stage (d105) lung mets\nas well as d80 WT and Untreated"
@@ -477,11 +487,13 @@ dev.off()
 
 ### Subset
 figS7C_dt <- diversityMetrics_lsdt$Lung[Experiment != "d95", mget(c("geoSample", "Treatment", "Title", "Clonality"))]
+lvls_v <- levels(figS7C_dt$Title)
 
 ### Labels
 figS7C_dt[, yPos := min(Clonality)]
-figS7C_counts <- as.data.table(table(figS7C_dt$Treatment))
-figS7C_dt <- merge(figS7C_dt, figS7C_counts, by.x = "Treatment", by.y = "V1", sort = F)
+figS7C_counts <- as.data.table(table(figS7C_dt$Title))
+figS7C_dt <- merge(figS7C_dt, figS7C_counts, by.x = "Title", by.y = "V1", sort = F)
+figS7C_dt$Title <- factor(figS7C_dt$Title, levels = lvls_v)
 
 ### Title
 figS7CTitle_v <- "Fig S7c - Treatwise Clonal Index of end-stage (d105) lung mets\nas well as d80 WT and Untreated"
@@ -516,6 +528,7 @@ dev.off()
 ### Subset
 figS7D_dt <- topClones_lsdt$Lung[Experiment != "d95",]
 figS7D_dt$Sample <- NULL; figS7D_dt$Experiment <- NULL
+lvls_v <- levels(figS7D_dt$Title)
 
 ### Title
 figS7DTitle_v <- "Fig S7d - Binned Clonal Frequencies of Lung Mets"
@@ -527,7 +540,8 @@ tmpFigS7D_dt[, mean := mean(value, na.rm = T), by = c("Title", "variable")]
 tmpFigS7D_dt <- unique(tmpFigS7D_dt[,mget(c("Title", "Treatment", "mean", "variable"))])
 
 ### Labels
-tmpFigS7D_dt <- merge(tmpFigS7D_dt, unique(figS7C_dt[,mget(c("Treatment", "N"))]), by = "Treatment", sort = F)
+tmpFigS7D_dt <- merge(tmpFigS7D_dt, unique(figS7C_dt[,mget(c("Title", "N"))]), by = "Title", sort = F)
+tmpFigS7D_dt$Title <- factor(tmpFigS7D_dt$Title, levels = lvls_v)
 
 ### Plot
 figS7D_gg <- ggplot(data = tmpFigS7D_dt, aes(x = Title, y = mean, fill = variable)) +
@@ -557,6 +571,7 @@ dev.off()
 ### Subset
 figS7E_dt <- freqGroups_lsdt$Tumor[Experiment != "d95",]
 figS7E_dt$Sample <- NULL; figS7E_dt$Experiment <- NULL
+lvls_v <- levels(figS7E_dt$Title)
 
 ### Title
 figS7ETitle_v <- "Fig S7e - Binned Clonal Frequencies of Lung Meets"
@@ -568,7 +583,8 @@ tmpFigS7E_dt[, mean := mean(value, na.rm = T), by = c("Title", "variable")]
 tmpFigS7E_dt <- unique(tmpFigS7E_dt[,mget(c("Title", "Treatment", "mean", "variable"))])
 
 ### Labels
-tmpFigS7E_dt <- merge(tmpFigS7E_dt, unique(figS7C_dt[,mget(c("Treatment", "N"))]), by = "Treatment", sort = F)
+tmpFigS7E_dt <- merge(tmpFigS7E_dt, unique(figS7C_dt[,mget(c("Title", "N"))]), by = "Title", sort = F)
+tmpFigS7E_dt$Title <- factor(tmpFigS7E_dt$Title, levels = lvls_v)
 
 ### Plot
 figS7E_gg <- ggplot(data = tmpFigS7E_dt, aes(x = Title, y = mean, fill = variable)) +
