@@ -26,23 +26,6 @@ meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
 ### Change NE to NA
 data_dt[BR == "NE", BR := NA]
 
-# ### Read in stats results and split
-# rawFile_v <- "./data/fig2/contrasts-for-135-outcomes_12JUN2025.xlsx"
-# rawSheets_v <- grep("^Q[1-5]$", readxl::excel_sheets(rawFile_v), value = T)
-# rawResults_lsdt <- lapply(rawSheets_v, function(x) {
-#   setDT(readxl::read_excel(rawFile_v, sheet = x))
-# })
-# names(rawResults_lsdt) <- rawSheets_v
-# 
-# log2File_v <- "./data/fig2/contrasts-for-135-outcomes_log2_12JUN2025.xlsx"
-# log2Sheets_v <- grep("^Q[1-5]_log2$", readxl::excel_sheets(log2File_v), value = T)
-# log2Results_lsdt <- lapply(log2Sheets_v, function(x) {
-#   setDT(readxl::read_excel(log2File_v, sheet = x))
-# })
-# names(log2Results_lsdt) <- log2Sheets_v
-# 
-# results_lslsdt <- list("raw" = rawResults_lsdt, "log2" = log2Results_lsdt)
-
 ### Read in data type info
 flow_dt <- fread("./data/fig2/flowDataTypes.txt")
 luminex_dt <- fread("./data/fig2/luminexDataTypes.txt")
@@ -178,13 +161,6 @@ for (i in 1:length(toPlot_lslsv)) {
   currSize_v <- currInfo_lsv$Size
   currLabSize_v <- currInfo_lsv$LabSize
   
-  # ### Get results
-  # currRes_dt <- results_lslsdt[[currScale_v]][[grep(currQ_v, names(results_lslsdt[[currScale_v]]), value = T)]]
-  # 
-  # ### Subset
-  # currRes_dt <- currRes_dt[Outcome %in% unlist(currPops_v),]
-  # currRes_dt$Outcome <- factor(currRes_dt$Outcome, levels = unlist(currPops_v))
-  
   ### Get effect and color
   if (currEffect_v == "Grp") {
     fillCol_v <- "CB"
@@ -242,7 +218,8 @@ for (i in 1:length(toPlot_lslsv)) {
   currMelt_dt <- currMelt_dt[!is.na(value)]
   
   ### Get counts
-  counts_dt <- as.data.table(table(currMelt_dt[,mget(unique(c(fillCol_v, xVar_v)))]))
+  currTmp_dt <- unique(currMelt_dt[,mget(unique(c("PatientID", fillCol_v, xVar_v)))])
+  counts_dt <- as.data.table(table(currTmp_dt[,mget(unique(c(fillCol_v, xVar_v)))]))
   counts_lsdt[[currFigName_v]] <- counts_dt
   
   ### Add them
@@ -313,7 +290,7 @@ for (i in 1:length(toPlot_lslsv)) {
   } else if (labelPosition_v == "bottom") {
     currFigName_v <- paste0(currFigName_v, "_countsBottom")
   } else {
-    currFigName_v <- paste0(currFigName_v, "_noCounts")
+    currFigName_v <- currFigName_v
   }
   
   ### Save
