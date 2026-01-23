@@ -190,7 +190,7 @@ tumorWaterfall <- function(wide_dt, xVar_v = "mouse", treatCol_v = "treatment",
   plot_lsgg <- annotatedBar(plot_gg = plot_gg, x_v = xVar_v,
                             annot_lsv = annot_lsv,
                             annotColors_lsv = annotColors_lsv)
-  
+
   ### Output
   return(plot_lsgg)
   
@@ -391,7 +391,6 @@ g_legend <- function(a.gplot){
 #' @param title_v optional plot title
 #' @param annot_lsv list of annotations to add below the plot. e.g. annot_lsv = list("outName1" = "colName1", "outName2" = "colName2")
 #' @param annotColors_lsv list of colors for annotations. list element names are same as annot_lsv names; list elements are named color vectors, names are values of annot_lsv colNames in data_dt
-#' @param testTime_v logical indicating whether to see how long it takes to plot
 #' @param backgroundCol_v sent to panel.background element of ggplot theme. Needs to be white for a specific use case where I want to plot a percentage using fill_v = "fill", but I only want a subset of the identities to be shown.
 #' @details make a standard ggplot bar plot with extra annotations. Can provide a pre-existing plot instead of data.
 #' If a plot is provided, the x_v variable is still required, along with annot_lsv and annotColors_lsv. 
@@ -402,9 +401,7 @@ g_legend <- function(a.gplot){
 annotatedBar <- function(data_dt = NULL, plot_gg = NULL, x_v, y_v = NULL, 
                          stat_v = "count", position_v = "stack", yLab_v = "count", 
                          fill_v = NULL, fillColors_v = NULL, keepXAxis_v = F, legendPos_v = "bottom",
-                         title_v = NULL, annot_lsv = NULL, annotColors_lsv, testTime_v = F, backgroundCol_v = "white") {
-  
-  if (testTime_v) tocs_lsv <- list()
+                         title_v = NULL, annot_lsv = NULL, annotColors_lsv, backgroundCol_v = "white") {
   
   if (!is.null(data_dt)) {
     
@@ -458,60 +455,52 @@ annotatedBar <- function(data_dt = NULL, plot_gg = NULL, x_v, y_v = NULL,
     return(plot_gg)
   } else {
     
-    if (testTime_v) tictoc::tic()
-    
     ### Extract legend
-    mainLegend_gg <- g_legend(plot_gg + theme(legend.text = element_text(size = 18), legend.title = element_text(size = 20), 
+    mainLegend_gg <- g_legend(plot_gg + theme(legend.text = element_text(size = 18), legend.title = element_text(size = 20),
                                               plot.margin = unit(c(t = 0, r = 1, b = 1, l = 1), "cm")))
     plot_gg <- plot_gg + theme(legend.position = "none")
-    
+
     ### Extract axis
     mainXAxis_gg <- ggpubr::as_ggplot(cowplot::get_x_axis(plot_gg + theme(plot.margin = unit(c(t = -0.1, r = 1, b = 1, l = 1), "cm"))))
     plot_gg <- plot_gg + theme(axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
-    
+
     ### Set margin
     plot_gg <- plot_gg + theme(plot.margin = unit(c(t = 1, r = 1, b = 0, l = 1), "cm"))
-    
-    if (testTime_v) tocs_lsv[["legend"]] <- tictoc::toc()$callback_msg
-    
+
     ### Build bar charts
     bar_lsgg <- barLegend_lsgg <- list()
     for (i in 1:length(annot_lsv)) {
-      
+
       ### Get info
       currName_v <- names(annot_lsv)[i]
       currColName_v <- annot_lsv[[currName_v]]
-      
-      if (testTime_v) tictoc::tic()
-      
+
       ### Make bar
       currBar_gg <- suppressWarnings(ggplot(data_dt, aes(x = !!sym(x_v), y = 1, fill = !!sym(currColName_v)))) +
-        geom_bar(stat = "identity", width = 1) + 
+        geom_bar(stat = "identity", width = 1) +
         scale_y_continuous(limits = c(0,1)) +
-        theme(panel.background = element_blank(), 
-              axis.title = element_blank(), 
-              axis.text = element_blank(), 
+        theme(panel.background = element_blank(),
+              axis.title = element_blank(),
+              axis.text = element_blank(),
               axis.ticks = element_blank(),
-              legend.position = "bottom", 
+              legend.position = "bottom",
               panel.grid = element_blank()) +
         scale_fill_manual(values = annotColors_lsv[[currName_v]], breaks = names(annotColors_lsv[[currName_v]])) +
         labs(fill = currName_v)
-      
+
       ### Split legend
       currBarLegend_gg <- suppressWarnings(g_legend(currBar_gg))
       currBar_gg <- currBar_gg + theme(legend.position = "none")
-      
+
       ### Set margin
       currBar_gg <- currBar_gg + theme(plot.margin = unit(c(t = -0.1, r = 1, b = -0.1, l = 1), "cm"))
-      
+
       ### Save
       bar_lsgg[[currName_v]] <- currBar_gg
       barLegend_lsgg[[currName_v]] <- currBarLegend_gg
-      
-      if (testTime_v) tocs_lsv[[currName_v]] <- tictoc::toc()$callback_msg
-      
+
     } # for i
-    
+
     ### New legend version - this is messed up. Doesn't work with the scale fill manual...
     ### As it is now, annot_lsv has to be list("Name" = "Name") and annotColors_lsv must be list("Name" = colorVector_v)
     tmp <- melt(data_dt[,mget(c(x_v, names(annot_lsv)))], measure.vars = names(annot_lsv))
@@ -521,29 +510,29 @@ annotatedBar <- function(data_dt = NULL, plot_gg = NULL, x_v, y_v = NULL,
     if (is.logical(all.equal(tmpColor[names(annotColors_lsv)], NA_character_))) {
       tmpColor <- tmpColor[names(annotColors_lsv)]
       comboBarLegend_gg <- ggplot(tmp, aes(x = !!sym(x_v), y = 1, fill = variable)) + geom_boxplot() +
-        scale_fill_manual(values = tmpColor, breaks = names(tmpColor)) + 
+        scale_fill_manual(values = tmpColor, breaks = names(tmpColor)) +
         theme_classic() +
-        theme(plot.title = element_text(hjust = 0.5, size = 18), 
-              plot.subtitle = element_text(hjust = 0.5, size = 14), 
-              axis.text = element_text(size = 12), 
-              axis.title = element_text(size = 14), 
-              legend.text = element_text(size = 12), 
+        theme(plot.title = element_text(hjust = 0.5, size = 18),
+              plot.subtitle = element_text(hjust = 0.5, size = 14),
+              axis.text = element_text(size = 12),
+              axis.title = element_text(size = 14),
+              legend.text = element_text(size = 12),
               legend.title = element_text(size = 14))
     } else {
       comboBarLegend_gg <- ggplot(tmp, aes(x = !!sym(x_v), y = 1, fill = value)) + geom_boxplot() +
-        scale_fill_manual(values = tmpColor, breaks = names(tmpColor)) + 
+        scale_fill_manual(values = tmpColor, breaks = names(tmpColor)) +
         theme_classic() +
-        theme(plot.title = element_text(hjust = 0.5, size = 18), 
-              plot.subtitle = element_text(hjust = 0.5, size = 14), 
-              axis.text = element_text(size = 12), 
-              axis.title = element_text(size = 14), 
-              legend.text = element_text(size = 12), 
+        theme(plot.title = element_text(hjust = 0.5, size = 18),
+              plot.subtitle = element_text(hjust = 0.5, size = 14),
+              axis.text = element_text(size = 12),
+              axis.title = element_text(size = 14),
+              legend.text = element_text(size = 12),
               legend.title = element_text(size = 14))
     }
-    
+
     comboBarLegend_gg <- comboBarLegend_gg + theme(legend.margin = margin(t = 0, r = 0.5, b = 0, l = 0.5, "cm"))
     comboBarLegend_gg <- get_legend(comboBarLegend_gg)
-    
+
     ### Add axis
     if (keepXAxis_v) {
       toPlot_lsgg <- c(list("plot" = plot_gg), bar_lsgg, list("axis" = mainXAxis_gg))
@@ -552,23 +541,19 @@ annotatedBar <- function(data_dt = NULL, plot_gg = NULL, x_v, y_v = NULL,
       toPlot_lsgg <- c(list("plot" = plot_gg), bar_lsgg)
       heights_v <- c(2, rep(0.1, length(bar_lsgg)))
     }
-    
+
     # toPlotLegend_lsgg <- c(list("plot" = mainLegend_gg), barLegend_lsgg)
     toPlotLegend_lsgg <- c(list("plot" = mainLegend_gg, "annot" = comboBarLegend_gg))
-    
+
     if (length(bar_lsgg) > 3) heights_v[1] <- 1.9
-    
-    if (testTime_v) tictoc::tic()
+
     ### Combine plots
     combo_gg <- suppressWarnings(ggpubr::ggarrange(plotlist = toPlot_lsgg, ncol = 1, nrow = length(toPlot_lsgg), align = "v", heights = heights_v))
-    
-    if (testTime_v) tocs_lsv[["combo1"]] <- tictoc::toc()$callback_msg
-    
-    if (testTime_v) tictoc::tic()
+
     ### Combine legends
     if (length(toPlotLegend_lsgg) > 3) {nrow_v <- 2; ncol_v <- ceiling(length(toPlotLegend_lsgg)/2)} else {nrow_v <- 1; ncol_v <- length(toPlotLegend_lsgg)}
     comboLegend_gg <- ggpubr::ggarrange(plotlist = toPlotLegend_lsgg, nrow = nrow_v, ncol = ncol_v)
-    
+
     ### Combine both
     if (legendPos_v == "bottom") {
       finalCombo_gg <- ggpubr::ggarrange(plotlist = list(combo_gg, comboLegend_gg), ncol = 1, nrow = 2, heights = c(2, 1))
@@ -577,15 +562,10 @@ annotatedBar <- function(data_dt = NULL, plot_gg = NULL, x_v, y_v = NULL,
     } else {
       stop("Only 'bottom' and 'right' are available for legend position.")
     }
-    if (testTime_v) tocs_lsv[["combo2and3"]] <- tictoc::toc()$callback_msg
-    
-    ### Make outputt
-    if (testTime_v) {
-      out_ls <- list("annotPlot" = finalCombo_gg, "plot" = combo_gg, "legend" = comboLegend_gg, "tocs" = tocs_lsv)
-    } else {
-      out_ls <- list("annotPlot" = finalCombo_gg, "plot" = combo_gg, "legend" = comboLegend_gg)
-    } # fi
-    
+
+    ### Make output
+    out_ls <- list("annotPlot" = finalCombo_gg, "plot" = combo_gg, "legend" = comboLegend_gg)
+
     return(out_ls)
     
   } # fi is.null(annot_lsv)

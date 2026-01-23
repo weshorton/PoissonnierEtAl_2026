@@ -2,10 +2,13 @@
 ###################### FIGURE 2 SCATTER ###########################
 ###################################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Make line plots for 
   ### supplemental figure 2 panels S, T, U, and V
 
-source("./code/figure2_sourceRef.R")
+source(file.path(baseDir_v, "code/figure2_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -17,15 +20,15 @@ library(gridExtra)
 ###
 
 ### Read in data
-data_dt <- as.data.table(readxl::read_xlsx("./data/fig2/data.xlsx", sheet = "all"))
+data_dt <- as.data.table(readxl::read_xlsx(file.path(baseDir_v, "data/fig2/data.xlsx"), sheet = "all"))
 
 ### Read in survival
-sheets_v <- readxl::excel_sheets("./data/fig2/survivalGroups.xlsx")
+sheets_v <- readxl::excel_sheets(file.path(baseDir_v, "data/fig2/survivalGroups.xlsx"))
 survGrp_lsdt <- lapply(sheets_v, function(x) {
-  setDT(readxl::read_excel(path = "./data/fig2/survivalGroups.xlsx", sheet = x))
+  setDT(readxl::read_excel(path = file.path(baseDir_v, "data/fig2/survivalGroups.xlsx"), sheet = x))
 })
 names(survGrp_lsdt) <- sheets_v
-survMed_dt <- setDT(readxl::read_excel(path = "./data/fig2/survivalMedians.xlsx", sheet = "Sheet1"))
+survMed_dt <- setDT(readxl::read_excel(path = file.path(baseDir_v, "data/fig2/survivalMedians.xlsx"), sheet = "Sheet1"))
 
 ### Create metadata
 metaCols_v <- c("PatientID", "CB", "BR", "progression (1 or 0)", "PFS_time", "TOT", "Dstart",
@@ -42,8 +45,8 @@ uniqPt_v <- unique(data_dt$PatientID)
 if (length(uniqPt_v) != 35) stop("Bad patient substitution")
 
 ### Read in data type info
-flow_dt <- fread("./data/fig2/flowDataTypes.txt")
-luminex_dt <- fread("./data/fig2/luminexDataTypes.txt")
+flow_dt <- fread(file.path(baseDir_v, "data/fig2/flowDataTypes.txt"))
+luminex_dt <- fread(file.path(baseDir_v, "data/fig2/luminexDataTypes.txt"))
 ref_dt <- rbind(flow_dt, luminex_dt)
 
 ### Change values to pct for those that require it
@@ -149,11 +152,11 @@ for (i in 1:nrow(scatterPops_dt)) {
   currCombo_gg <- ggpubr::ggarrange(curr_gg, currCox_gg, currMartin_gg, nrow = 1)
   currCombo_gg <- ggpubr::annotate_figure(currCombo_gg, top = text_grob(label = paste0("PFS Time vs. ", currPop_v, "\n", currMeasure_v), size = 24))
   
-  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_scatterChecks_", currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
+  pdf(file = file.path(baseDir_v, "results/fig2/", paste0(currFigName_v, "_scatterChecks_", currMeasure_v, "_", currPop_v, ".pdf")), width = 18)
   print(currCombo_gg)
   dev.off()
   
-  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_scatter_", currMeasure_v, "_", currPop_v, ".pdf")))
+  pdf(file = file.path(baseDir_v, "results/fig2/", paste0(currFigName_v, "_scatter_", currMeasure_v, "_", currPop_v, ".pdf")))
   print(curr_gg)
   dev.off()
   
@@ -226,7 +229,7 @@ for (i in 1:nrow(kmPops_dt)) {
                           legend = c(0.8,0.8),
                           palette = c("blue", "red"))))
   
-  pdf(file = file.path("./fig2/", paste0(currFigName_v, "_KM_", currMeasure_v, "_", currPop_v, ".pdf")), 
+  pdf(file = file.path(baseDir_v, "results/fig2/", paste0(currFigName_v, "_KM_", currMeasure_v, "_", currPop_v, ".pdf")), 
       width = 7, height = 7, onefile = F)
   suppressMessages(suppressWarnings(print(curr_gg)))
   dev.off()

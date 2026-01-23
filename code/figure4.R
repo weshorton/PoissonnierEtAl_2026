@@ -2,9 +2,13 @@
 ########################## FIGURE 4 WATERFALL ######################
 ####################################################################
 
-### Make waterfall plot and run stats for main figure 4 panel C
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
 
-source("./code/figure4_sourceRef.R")
+### Make waterfall plot and run stats for main figure 4 panel C
+### Note, running this with command line will create a blank Rplots.pdf
+
+source(file.path(baseDir_v, "code/figure4_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -15,7 +19,7 @@ library(ggpubr)
 
 ### Read in Data
 sheetNames_v <- c("d25 aPD-1 groups", "d25 aPD-L1 groups")
-file_v <- "./data/fig4/tumorBurdenData.xlsx"
+file_v <- file.path(baseDir_v, "data/fig4/tumorBurdenData.xlsx")
 data_lsdt <- lapply(sheetNames_v, function(x) setDT(readxl::read_excel(file_v, sheet = x)))
 names(data_lsdt) <- sheetNames_v
 
@@ -67,43 +71,56 @@ aPD1_responders_dt <- data_lsdt$`d25 aPD-L1 groups`[Short == "PLX+PTX+aPD-1" & D
 ### Plot ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###
 
-plot_lsgg <- sapply(data_lsdt, function(x) {
-  tmpColors_v <- colors_v[intersect(names(colors_v), unique(x$Short))]
-  p_gg <- tumorWaterfall(wide_dt = x, xVar_v = "Sample", treatCol_v = "Short",
-                         treatOrder_v = names(tmpColors_v), treatColors_v = tmpColors_v, addCounts_v = F,
-                         yVar_v = "D8_to_D18_pctChange", groupVar_v = "D8_to_D18_pctRate",
-                         addGaps_v = T, title_v = "D8 to D18 Tumor Burden Change", thinBars_v = T)
-  return(p_gg$annotPlot)
-}, simplify = F, USE.NAMES = T)
+tmpColors_v <- colors_v[intersect(names(colors_v), unique(data_lsdt$allTreats$Short))]
+plot_gg <- tumorWaterfall(wide_dt = data_lsdt$allTreats, 
+                          xVar_v = "Sample", 
+                          treatCol_v = "Short",
+                          treatOrder_v = names(tmpColors_v), 
+                          treatColors_v = tmpColors_v, 
+                          addCounts_v = F,
+                          yVar_v = "D8_to_D18_pctChange", 
+                          groupVar_v = "D8_to_D18_pctRate",
+                          addGaps_v = T, 
+                          title_v = "D8 to D18 Tumor Burden Change", 
+                          thinBars_v = T)
 
-pdf(file = "./fig4/fig4c.pdf", width = 14, height = 10)
-print(plot_lsgg$allTreats)
-dev.off()
-
-###
-### Stats ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###
-
-stats_KW_lsdt <- stats_Wilcox_lsdt <- list()
-for (i in 1:length(data_lsdt)) {
-  
-  ### Get info
-  currName_v <- names(data_lsdt)[i]
-  currData_dt <- data_lsdt[[currName_v]]
-  
-  ### Make sure factor
-  currData_dt$Short <- factor(currData_dt$Short, 
-                              levels = intersect(names(colors_v), unique(currData_dt$Short)))
-  
-  ### Run Stats
-  currStatsKW_dt <- simpleStats(data_dt = currData_dt, depVar_v = "D8_to_D18_pctChange",
-                                indVar_v = "Short", indOrder_v = NULL, compType_v = "KW")
-  currStatsWilcox_dt <- simpleStats(data_dt = currData_dt, depVar_v = "D8_to_D18_pctChange",
-                                    indVar_v = "Short", indOrder_v = NULL, compType_v = "wilcox")
-  
-  stats_KW_lsdt[[currName_v]] <- currStatsKW_dt
-  stats_Wilcox_lsdt[[currName_v]] <- currStatsWilcox_dt
-  
-} # for i
-
-writexl::write_xlsx(x = stats_Wilcox_lsdt["allTreats"], path = "./fig4/wilcoxResults.xslx")
+# plot_lsgg <- sapply(data_lsdt, function(x) {
+#   tmpColors_v <- colors_v[intersect(names(colors_v), unique(x$Short))]
+#   p_gg <- tumorWaterfall(wide_dt = x, xVar_v = "Sample", treatCol_v = "Short",
+#                          treatOrder_v = names(tmpColors_v), treatColors_v = tmpColors_v, addCounts_v = F,
+#                          yVar_v = "D8_to_D18_pctChange", groupVar_v = "D8_to_D18_pctRate",
+#                          addGaps_v = T, title_v = "D8 to D18 Tumor Burden Change", thinBars_v = T)
+#   return(p_gg$annotPlot)
+# }, simplify = F, USE.NAMES = T)
+# 
+# pdf(file = file.path(baseDir_v, "results/fig4/fig4c.pdf"), width = 14, height = 10)
+# print(plot_lsgg$allTreats)
+# dev.off()
+# 
+# ###
+# ### Stats ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ###
+# 
+# stats_KW_lsdt <- stats_Wilcox_lsdt <- list()
+# for (i in 1:length(data_lsdt)) {
+#   
+#   ### Get info
+#   currName_v <- names(data_lsdt)[i]
+#   currData_dt <- data_lsdt[[currName_v]]
+#   
+#   ### Make sure factor
+#   currData_dt$Short <- factor(currData_dt$Short, 
+#                               levels = intersect(names(colors_v), unique(currData_dt$Short)))
+#   
+#   ### Run Stats
+#   currStatsKW_dt <- simpleStats(data_dt = currData_dt, depVar_v = "D8_to_D18_pctChange",
+#                                 indVar_v = "Short", indOrder_v = NULL, compType_v = "KW")
+#   currStatsWilcox_dt <- simpleStats(data_dt = currData_dt, depVar_v = "D8_to_D18_pctChange",
+#                                     indVar_v = "Short", indOrder_v = NULL, compType_v = "wilcox")
+#   
+#   stats_KW_lsdt[[currName_v]] <- currStatsKW_dt
+#   stats_Wilcox_lsdt[[currName_v]] <- currStatsWilcox_dt
+#   
+# } # for i
+# 
+# writexl::write_xlsx(x = stats_Wilcox_lsdt["allTreats"], path = file.path(baseDir_v, "results/fig4/wilcoxResults.xslx"))

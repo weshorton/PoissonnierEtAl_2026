@@ -2,41 +2,44 @@
 ######################## FIGURE 7 WRANGLE ########################
 ##################################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Read in data used for main figure 7 and wrangle for plots
 
-source("./code/figure7_sourceRef.R")
+source(file.path(baseDir_v, "code/figure7_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(immunarch)
-dir.create("./data/fig7/rds")
+dir.create(file.path(baseDir_v, "data/fig7/rds"))
 
 ###
 ### Read in ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###
 
 ### Tumor
-tumorDiv_dt <- fread("./data/fig7/diversity/tumor_divAnalysis.txt")
-tumorMeta_dt <- fread("./data/fig7/meta/Tumor_meta.txt")
-geoTumorMeta_dt <- fread("./data/fig7/meta/Tumor_samples.csv")
-tumorClones_lsdt <- readDir("./data/fig7/clones/tumor/")
-tumorFreqGroups_dt <- fread("./data/fig7/cloneDiv/Tumor_cumClonalFreqs.txt")
-tumorTopClones_dt <- fread("./data/fig7/topClones/Tumor_topCloneFreq.txt")
+tumorDiv_dt <- fread(file.path(baseDir_v, "data/fig7/diversity/tumor_divAnalysis.txt"))
+tumorMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Tumor_meta.txt"))
+geoTumorMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Tumor_samples.csv"))
+tumorClones_lsdt <- readDir(file.path(baseDir_v, "data/fig7/clones/tumor/"))
+tumorFreqGroups_dt <- fread(file.path(baseDir_v, "data/fig7/cloneDiv/Tumor_cumClonalFreqs.txt"))
+tumorTopClones_dt <- fread(file.path(baseDir_v, "data/fig7/topClones/Tumor_topCloneFreq.txt"))
 
 ### Lung
-lungDiv_dt <- fread("./data/fig7/diversity/lung_divAnalysis.txt")
-lungMeta_dt <- fread("./data/fig7/meta/Lung_meta.txt")
-geoLungMeta_dt <- fread("./data/fig7/meta/Lung_samples.csv")
-lungClones_lsdt <- readDir("./data/fig7/clones/lung/")
-lungFreqGroups_dt <- fread("./data/fig7/cloneDiv/Lung_cumClonalFreqs.txt")
-lungTopClones_dt <- fread("./data/fig7/topClones/Lung_topCloneFreq.txt")
+lungDiv_dt <- fread(file.path(baseDir_v, "data/fig7/diversity/lung_divAnalysis.txt"))
+lungMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Lung_meta.txt"))
+geoLungMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Lung_samples.csv"))
+lungClones_lsdt <- readDir(file.path(baseDir_v, "data/fig7/clones/lung/"))
+lungFreqGroups_dt <- fread(file.path(baseDir_v, "data/fig7/cloneDiv/Lung_cumClonalFreqs.txt"))
+lungTopClones_dt <- fread(file.path(baseDir_v, "data/fig7/topClones/Lung_topCloneFreq.txt"))
 
 ### Blood
-bloodDiv_dt <- fread("./data/fig7/diversity/blood_divAnalysis.txt")
-bloodMeta_dt <- fread("./data/fig7/meta/Blood_meta.txt")
-geoBloodMeta_dt <- fread("./data/fig7/meta/Blood_samples.csv")
-bloodClones_lsdt <- readDir("./data/fig7/clones/blood/")
-bloodFreqGroups_dt <- fread("./data/fig7/cloneDiv/Blood_cumClonalFreqs.txt")
-bloodTopClones_dt <- fread("./data/fig7/topClones/Blood_topCloneFreq.txt")
+bloodDiv_dt <- fread(file.path(baseDir_v, "data/fig7/diversity/blood_divAnalysis.txt"))
+bloodMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Blood_meta.txt"))
+geoBloodMeta_dt <- fread(file.path(baseDir_v, "data/fig7/meta/Blood_samples.csv"))
+bloodClones_lsdt <- readDir(file.path(baseDir_v, "data/fig7/clones/blood/"))
+bloodFreqGroups_dt <- fread(file.path(baseDir_v, "data/fig7/cloneDiv/Blood_cumClonalFreqs.txt"))
+bloodTopClones_dt <- fread(file.path(baseDir_v, "data/fig7/topClones/Blood_topCloneFreq.txt"))
 
 ###
 ### Plot info ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,12 +77,12 @@ treatCompLevels_v <- c("PLX+PTX+aPD-1_R_PLX+PTX+aPD-1_NR",
                        "PLX+PTX+aPD-1_NR_PLX+PTX+aPD-L1")
 
 ### Colors
-colors_dt <- setDT(readxl::read_xlsx("./data/fig7/colorCodes.xlsx"))
+colors_dt <- setDT(readxl::read_xlsx(file.path(baseDir_v, "data/fig7/colorCodes.xlsx")))
 colors_v <- colors_dt$Hex
 names(colors_v) <- colors_dt$Treatment
 
 ### Clone colors
-cloneColors_dt <- setDT(readxl::read_xlsx("./data/fig7/cloneColors.xlsx"))
+cloneColors_dt <- setDT(readxl::read_xlsx(file.path(baseDir_v, "data/fig7/cloneColors.xlsx")))
 cloneColors_v <- cloneColors_dt$Hex
 names(cloneColors_v) <- cloneColors_dt$Clonotype
 
@@ -99,7 +102,7 @@ plotInfo_lsv <- list("diversity" = c("Shannon Entropy", "Clonality"),
                      "topCloneColors" = topCloneColors_v,
                      "treatColors" = colors_v,
                      "trackCloneColors" = cloneColors_v)
-saveRDS(plotInfo_lsv, file = "./data/fig7/rds/plotInfo_lsv.rds")
+saveRDS(plotInfo_lsv, file = file.path(baseDir_v, "data/fig7/rds/plotInfo_lsv.rds"))
 
 ###
 ### Diversity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -600,10 +603,10 @@ trackCloneCorpus_lsdt[["BloodTop50"]] <- subBloodClonesTop50_lsdt
 ### Output ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###
 
-saveRDS(divOut_lsdt, file = "./data/fig7/rds/diversityMetrics_lsdt.rds")
-saveRDS(freqGroupOut_lsdt, file = "./data/fig7/rds/freqGroups_lsdt.rds")
-saveRDS(topClones_lsdt, file = "./data/fig7/rds/topClones_lsdt.rds")
-saveRDS(jaccard_lsdt, file = "./data/fig7/rds/jaccard_lsdt.rds")
-saveRDS(trackCloneQuery_lsdt, file = "./data/fig7/rds/trackCloneQuery_lsdt.rds")
-saveRDS(trackCloneCorpus_lsdt, file = "./data/fig7/rds/trackCloneCorpus_lsdt.rds")
+saveRDS(divOut_lsdt, file = file.path(baseDir_v, "data/fig7/rds/diversityMetrics_lsdt.rds"))
+saveRDS(freqGroupOut_lsdt, file = file.path(baseDir_v, "data/fig7/rds/freqGroups_lsdt.rds"))
+saveRDS(topClones_lsdt, file = file.path(baseDir_v, "data/fig7/rds/topClones_lsdt.rds"))
+saveRDS(jaccard_lsdt, file = file.path(baseDir_v, "data/fig7/rds/jaccard_lsdt.rds"))
+saveRDS(trackCloneQuery_lsdt, file = file.path(baseDir_v, "data/fig7/rds/trackCloneQuery_lsdt.rds"))
+saveRDS(trackCloneCorpus_lsdt, file = file.path(baseDir_v, "data/fig7/rds/trackCloneCorpus_lsdt.rds"))
 

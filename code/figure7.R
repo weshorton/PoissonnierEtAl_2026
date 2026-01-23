@@ -2,13 +2,16 @@
 ######################## FIGURE 7 #########################
 ###########################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Make line plots for 
 ### main figure 7 (panels A, B, C, D, E, F, G, H, I, and J)
 ### supplemental figure 7 (panels A, B, C, D, E, F, G, and H)
 
 ### Some mainuscript figures were made in prism, with the same data
 
-source("./code/figure7_sourceRef.R")
+source(file.path(baseDir_v, "code/figure7_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(immunarch)
@@ -18,8 +21,8 @@ library(immunarch)
 ###
 
 ### Dirs
-inDir_v <- "./data/fig7/rds"
-plotDir_v <- "./fig7"
+inDir_v <- file.path(baseDir_v, "data/fig7/rds")
+plotDir_v <- file.path(baseDir_v, "results/fig7")
 
 ### Data
 diversityMetrics_lsdt <- readRDS(file.path(inDir_v, "diversityMetrics_lsdt.rds"))

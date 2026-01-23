@@ -2,11 +2,14 @@
 ######################## FIGURE 2 LINE ########################
 ###############################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Make line plots for 
   ### main figure 2 (panels A, B, C, and I)
   ### supplemental figure 2 (panels P (left), P (right), and Q)
 
-source("./code/figure2_sourceRef.R")
+source(file.path(baseDir_v, "code/figure2_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -18,7 +21,7 @@ library(gridExtra)
 ###
 
 ### Read in data
-data_dt <- as.data.table(readxl::read_xlsx("./data/fig2/data.xlsx", sheet = "all"))
+data_dt <- as.data.table(readxl::read_xlsx(file.path(baseDir_v, "data/fig2/data.xlsx"), sheet = "all"))
 
 ### Create metadata
 meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
@@ -32,8 +35,8 @@ data_dt <- data_dt[!(PatientID %in% toRm_v),]
 # results_lsdt <- sapply(paste0("Q", 1:5), function(x) results_dt[Label == x,], simplify = F, USE.NAMES = T)
 
 ### Read in data type info
-flow_dt <- fread("./data/fig2/flowDataTypes.txt")
-luminex_dt <- fread("./data/fig2/luminexDataTypes.txt")
+flow_dt <- fread(file.path(baseDir_v, "data/fig2/flowDataTypes.txt"))
+luminex_dt <- fread(file.path(baseDir_v, "data/fig2/luminexDataTypes.txt"))
 ref_dt <- rbind(flow_dt, luminex_dt)
 
 ### Plot populations
@@ -124,7 +127,6 @@ for (i in 1:nrow(figurePops_dt)) {
   all_dt <- do.call(rbind, currChanges_lsdt)
   wide_dt <- reshape(all_dt, timevar = "Compare", idvar = "Dir", direction = "wide")
   wide_dt[is.na(wide_dt)] <- 0
-  #currChanges_lsdt[[currPop_v]] <- wide_dt
   
   ### Turn table into grob
   currChanges_grob <- tableGrob(wide_dt)
@@ -155,11 +157,11 @@ for (i in 1:nrow(figurePops_dt)) {
   }
   
   ### Save plot
-  ggsave(filename = file.path("./fig2", paste0(currFig_v, ".pdf")), plot = curr_gg, 
+  ggsave(filename = file.path(baseDir_v, "results/fig2", paste0(currFig_v, ".pdf")), plot = curr_gg, 
          device = "pdf", width = 3, height = 3)
   
   ### Save table
-  pdf(file = file.path("./fig2", paste0("table_", currFig_v, ".pdf")), width = 10, height = 10)
+  pdf(file = file.path(baseDir_v, "results/fig2", paste0("table_", currFig_v, ".pdf")), width = 10, height = 10)
   grid.draw(currChanges_grob)
   dev.off()
   

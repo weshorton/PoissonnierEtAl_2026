@@ -2,11 +2,14 @@
 ######################## FIGURE 2 BOX #########################
 ###############################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Make line plots for 
   ### main figure 2 (panels D, E, and J)
   ### supplemental figure 2 (panels N, O, and R)
 
-source("./code/figure2_sourceRef.R")
+source(file.path(baseDir_v, "code/figure2_sourceRef.R"))
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -18,7 +21,7 @@ library(gridExtra)
 ###
 
 ### Read in data
-data_dt <- as.data.table(readxl::read_xlsx("./data/fig2/data.xlsx", sheet = "all"))
+data_dt <- as.data.table(readxl::read_xlsx(file.path(baseDir_v, "data/fig2/data.xlsx"), sheet = "all"))
 
 ### Create metadata
 meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
@@ -27,8 +30,8 @@ meta_dt <- unique(data_dt[,mget(c("PatientID", "BR", "CB"))])
 data_dt[BR == "NE", BR := NA]
 
 ### Read in data type info
-flow_dt <- fread("./data/fig2/flowDataTypes.txt")
-luminex_dt <- fread("./data/fig2/luminexDataTypes.txt")
+flow_dt <- fread(file.path(baseDir_v, "data/fig2/flowDataTypes.txt"))
+luminex_dt <- fread(file.path(baseDir_v, "data/fig2/luminexDataTypes.txt"))
 ref_dt <- rbind(flow_dt, luminex_dt)
 
 ### Info for converting names to time
@@ -294,10 +297,10 @@ for (i in 1:length(toPlot_lslsv)) {
   }
   
   ### Save
-  ggsave(filename = file.path("./fig2", paste0(currFigName_v, "_noLabel.pdf")), device = "pdf",
+  ggsave(filename = file.path(baseDir_v, "results/fig2", paste0(currFigName_v, "_noLabel.pdf")), device = "pdf",
          plot = currNoLab_gg, height = currSize_v[1], width = currSize_v[2])
   
-  ggsave(filename = file.path("./fig2", paste0(currFigName_v, ".pdf")), device = "pdf",
+  ggsave(filename = file.path(baseDir_v, "results/fig2", paste0(currFigName_v, ".pdf")), device = "pdf",
          plot = curr_gg, height = currLabSize_v[1], width = currLabSize_v[2])
   
 } # for i
@@ -308,4 +311,4 @@ invisible(lapply(seq_along(counts_lsdt), function(x) {
   openxlsx::addWorksheet(wb = fig2box_wb, sheetName = names(counts_lsdt)[x])
   openxlsx::writeData(wb = fig2box_wb, sheet = x, x = counts_lsdt[[x]])
 }))
-openxlsx::saveWorkbook(wb = fig2box_wb, file = "./fig2/boxplotSampleCounts.xlsx", overwrite = T)
+openxlsx::saveWorkbook(wb = fig2box_wb, file = file.path(baseDir_v, "results/fig2/boxplotSampleCounts.xlsx"), overwrite = T)

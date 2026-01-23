@@ -2,9 +2,12 @@
 ########################## SURVIVAL GROUPS ##########################
 #####################################################################
 
+### Set to "/" for CodeOcean and "./" for github
+baseDir_v <- "./"
+
 ### Read in data and calculate survival groups based on median expression
 
-source("./code/figure2_sourceRef.R")
+source(file.path(baseDir_v, "code/figure2_sourceRef.R"))
 library(data.table)
 
 ###
@@ -12,10 +15,10 @@ library(data.table)
 ###
 
 ### Read in data
-data_dt <- as.data.table(readxl::read_xlsx("./data/fig2/data.xlsx", sheet = "all"))
+data_dt <- as.data.table(readxl::read_xlsx(file.path(baseDir_v, "data/fig2/data.xlsx"), sheet = "all"))
 
 ### Read in reference - indicates columns to use and their data type
-ref_dt <- fread("./data/fig2/flowDataTypes.txt")
+ref_dt <- fread(file.path(baseDir_v, "data/fig2/flowDataTypes.txt"))
 
 ### Extract metadata
 meta_dt <- unique(data_dt[,mget(metaCols_v)])
@@ -138,10 +141,12 @@ invisible(lapply(seq_along(groupData_lsdt), function(x) {
 }))
 
 ### Save workbook
-openxlsx::saveWorkbook(wb = wb, file = "./data/fig2/survivalGroups.xlsx", overwrite = T)
+openxlsx::saveWorkbook(wb = wb, file = file.path(baseDir_v, "data/fig2/survivalGroups.xlsx"), overwrite = T)
+openxlsx::saveWorkbook(wb = wb, file = file.path(baseDir_v, "results/fig2/survivalGroups.xlsx"), overwrite = T)
 
 ###
 ### Write medians ~~~~~~~~~~~
 ###
 
-writexl::write_xlsx(x = groupMedians_dt, path = "./data/fig2/survivalMedians.xlsx")
+writexl::write_xlsx(x = groupMedians_dt, path = file.path(baseDir_v, "data/fig2/survivalMedians.xlsx"))
+writexl::write_xlsx(x = groupMedians_dt, path = file.path(baseDir_v, "results/fig2/survivalMedians.xlsx"))
